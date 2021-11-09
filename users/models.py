@@ -1,10 +1,10 @@
 from uuid import uuid4
 
-from django.db import models
+# from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.utils import timezone
-
-from apps.location.models import Location
+from django.contrib.gis.db import models
+from django.contrib.gis.geos import Point
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -31,7 +31,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150, blank=True)
     email = models.EmailField(blank=True)
-    location = models.ForeignKey(Location, blank=True, on_delete=models.SET_NULL, null=True)
     profile_photo = models.FileField()
 
     is_staff = models.BooleanField(
@@ -72,6 +71,12 @@ class User(AbstractBaseUser, PermissionsMixin):
             type=self.type_choices[self.type - 1][1],
             is_verified=self.is_verified
         )
+
+
+class UserLocation(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    location = models.PointField(geography=True, default=Point(0.0, 0.0))
+    created_at = models.DateTimeField(default=timezone.now)
 
 
 class UserVerification(models.Model):
