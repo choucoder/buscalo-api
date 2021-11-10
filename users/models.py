@@ -6,15 +6,20 @@ from django.utils import timezone
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 
+def getFilename(instance, filename):
+    return '/'.join(['images', str(uuid4()).replace('-', ''), filename])
+
+def generateRandomUUID():
+    return str(uuid4())
 
 class User(AbstractBaseUser, PermissionsMixin):
 
     ADMIN = 1
     REGULAR = 2
 
-    telegram_user_id = models.CharField(max_length=150, unique=True, default=str(uuid4()))
-    telegram_chat_id = models.CharField(max_length=150, unique=True, default=str(uuid4()))
-    telegram_username = models.CharField(max_length=150, unique=True, default=str(uuid4()))
+    telegram_user_id = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
+    telegram_chat_id = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
+    telegram_username = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
 
     username = models.CharField(max_length=150, unique=True)
 
@@ -31,10 +36,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150, blank=True)
     email = models.EmailField(blank=True)
-    profile_photo = models.FileField()
+    photo = models.ImageField(upload_to=getFilename, blank=True, null=True)
+    location = models.PointField(geography=True, blank=True, null=True)
 
     is_staff = models.BooleanField(
-        default=False,
+        default=True,
         help_text='Designates whether the user can log into this admin site.',
     )
     is_active = models.BooleanField(
