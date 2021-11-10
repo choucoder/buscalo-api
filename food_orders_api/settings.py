@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'rest_framework',
+    'rest_framework_gis',
     'users',
 ]
 
@@ -169,3 +170,7 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Media files uploaded
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/' # 'http://0.0.0.0:port/media/
