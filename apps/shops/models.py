@@ -21,7 +21,6 @@ class Shop(models.Model):
         max_length=40,
         primary_key=True,
         editable=False,
-        default=uuid4
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=64, required=True)
