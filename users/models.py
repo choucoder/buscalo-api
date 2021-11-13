@@ -1,16 +1,22 @@
 from uuid import uuid4
 
-# from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager
 from django.utils import timezone
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
+from shortuuid.django_fields import ShortUUIDField
+
 
 def getFilename(instance, filename):
-    return '/'.join(['images', str(uuid4()).replace('-', ''), filename])
+    extension = filename.split('.')[-1]
+    new_filename = "%s.%s" % (str(uuid4()).replace('-', ''), extension)
+
+    return '/'.join(['images', new_filename])
+
 
 def generateRandomUUID():
     return str(uuid4())
+
 
 class User(AbstractBaseUser, PermissionsMixin):
 
@@ -38,7 +44,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(blank=True)
     photo = models.ImageField(upload_to=getFilename, blank=True, null=True)
     location = models.PointField(geography=True, blank=True, null=True)
-
+    push_post_amount = models.IntegerField(default=2)
+    
     is_staff = models.BooleanField(
         default=True,
         help_text='Designates whether the user can log into this admin site.',
@@ -79,33 +86,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         )
 
 
-class UserLocation(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    location = models.PointField(geography=True, default=Point(0.0, 0.0))
-    created_at = models.DateTimeField(default=timezone.now)
-
-
 class UserVerification(models.Model):
+    key = ShortUUIDField(
+        length=22,
+        max_length=40,
+        unique=True,
+        editable=False,
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    key = models.CharField(max_length=150, default=str(uuid4()))
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return "{user}, {key}, {created_at}".format(
             user=f"{self.user.first_name}, {self.telegram_username}",
             key=self.key,
-            created_at=self.created_at
-        )
-
-
-class PushHistories(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    amout = models.IntegerField(default=2)
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return "{user}, {amout}, {created_at}".format(
-            user=self.user.first_name,
-            amout=self.amout,
             created_at=self.created_at
         )
