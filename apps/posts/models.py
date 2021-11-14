@@ -7,13 +7,7 @@ from shortuuid.django_fields import ShortUUIDField
 from users.models import User
 from apps.products.models import Product
 from apps.shops.models import Shop
-
-
-def getFilename(instance, filename):
-    extension = filename.split('.')[-1]
-    new_filename = "%s.%s" % (str(uuid4()).replace('-', ''), extension)
-
-    return '/'.join(['images', new_filename])
+from core.utils import get_filename
 
 
 class Post(models.Model):
@@ -51,7 +45,7 @@ class Post(models.Model):
         default=notify_type_choices[0][0]
     )
     text = models.CharField(max_length=255, null=True)
-    photo = models.ImageField(upload_to=getFilename, blank=True, null=True)
+    photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -68,12 +62,12 @@ class Post(models.Model):
                 shop=self.shop.name,
                 product=self.product.name,
                 type=self.type,
-                notify_type=self.notify_type
+                notify_type=self.get_notify_type_display()
             )
         else:
             return "{user}, {text}, {type}, {notify_type}".format(
                 user=self.user.first_name,
                 text=self.text,
                 type=self.type,
-                notify_type=self.notify_type
+                notify_type=self.get_notify_type_display()
             )

@@ -10,6 +10,11 @@ from users.models import User
 
 
 class Order(models.Model):
+    CREATED = 1
+    COMPLETED = 2
+    EXPIRED = 3
+    CANCELLED = 4
+
     id = ShortUUIDField(
         length=18,
         max_length=24,
@@ -25,10 +30,10 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
     status_choices = [
-        (1, 'CREATED'),
-        (2, 'COMPLETED'),
-        (3, 'EXPIRED'),
-        (4, 'CANCELED'),
+        (CREATED, 'CREATED'),
+        (COMPLETED, 'COMPLETED'),
+        (EXPIRED, 'EXPIRED'),
+        (CANCELLED, 'CANCELED'),
     ]
     status = models.PositiveSmallIntegerField(
         default=status_choices[0][0],
@@ -36,8 +41,9 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return "{id}, {user}, {shop}".format(
+        return "{id}, {user}, {shop}, {status}".format(
             id=self.id,
             user=self.user.first_name,
-            shop=self.shop.name
+            shop=self.shop.name,
+            status=self.get_status_display()
         )

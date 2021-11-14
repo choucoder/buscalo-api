@@ -6,16 +6,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
 
-
-def getFilename(instance, filename):
-    extension = filename.split('.')[-1]
-    new_filename = "%s.%s" % (str(uuid4()).replace('-', ''), extension)
-
-    return '/'.join(['images', new_filename])
-
-
-def generateRandomUUID():
-    return str(uuid4())
+from core.utils import get_filename, generate_random_uuid
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -23,9 +14,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     ADMIN = 1
     REGULAR = 2
 
-    telegram_user_id = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
-    telegram_chat_id = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
-    telegram_username = models.CharField(max_length=150, unique=True, default=generateRandomUUID)
+    telegram_user_id = models.CharField(
+        max_length=150, unique=True, default=generate_random_uuid
+    )
+    telegram_chat_id = models.CharField(
+        max_length=150, unique=True, default=generate_random_uuid
+    )
+    telegram_username = models.CharField(
+        max_length=150, unique=True, default=generate_random_uuid
+    )
 
     username = models.CharField(max_length=150, unique=True)
 
@@ -42,7 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150, blank=True)
     email = models.EmailField(blank=True)
-    photo = models.ImageField(upload_to=getFilename, blank=True, null=True)
+    photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     location = models.PointField(geography=True, blank=True, null=True)
     push_post_amount = models.IntegerField(default=2)
     
@@ -81,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return "{tg_user_id}, {first_name}, {type}, {is_verified}".format(
             tg_user_id=self.telegram_user_id,
             first_name=self.first_name,
-            type=self.type_choices[self.type - 1][1],
+            type=self.get_type_display(),
             is_verified=self.is_verified
         )
 

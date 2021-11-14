@@ -7,12 +7,7 @@ from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
 
 from users.models import User
-
-def getFilename(instance, filename):
-    extension = filename.split('.')[-1]
-    new_filename = "%s.%s" % (str(uuid4()).replace('-', ''), extension)
-
-    return '/'.join(['images', new_filename])
+from core.utils import get_filename
 
 
 class Shop(models.Model):
@@ -23,11 +18,11 @@ class Shop(models.Model):
         editable=False,
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=64, required=True)
+    name = models.CharField(max_length=64)
     description = models.CharField(max_length=512, default="")
     
     location = models.PointField(geography=True, blank=True, null=True)
-    logo = models.ImageField(upload_to=getFilename, blank=True, null=True)
+    logo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)

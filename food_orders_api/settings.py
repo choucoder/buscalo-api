@@ -68,6 +68,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'users',
+    'apps.shops',
+    'apps.products',
+    'apps.posts',
+    'apps.orders',
+    'apps.order_products',
+    'apps.services',
 ]
 
 MIDDLEWARE = [
