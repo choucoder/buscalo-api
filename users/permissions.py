@@ -1,13 +1,12 @@
 from rest_framework import permissions
 
 
-class IsAdmin(permissions.BasePermission):
+class IsAllowedUser(permissions.BasePermission):
     
     edit_methods = ('PUT', 'PATCH')
 
     def has_permission(self, request, view):
-        user = request.user
-        if user.is_authenticated and user.is_staff:
+        if request.user.is_authenticated:
             return True
 
     def has_object_permission(self, request, view, obj):
@@ -17,7 +16,7 @@ class IsAdmin(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        if obj.posted_by == request.user:
+        if obj == request.user:
             return True
 
         return False
