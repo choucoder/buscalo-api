@@ -1,10 +1,10 @@
-from rest_framework import serializers
+from rest_framework_gis.serializers import GeoModelSerializer
 
 from .models import Shop
 from users.serializers import UserSerializer
 
 
-class ListShopSerializer(serializers.ModelSerializer):
+class ListShopSerializer(GeoModelSerializer):
     
     user = UserSerializer(many=False, read_only=True)
 
@@ -13,7 +13,7 @@ class ListShopSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 
-class CreateShopSerializer(serializers.ModelSerializer):
+class CreateShopSerializer(GeoModelSerializer):
     
     class Meta:
         model = Shop
