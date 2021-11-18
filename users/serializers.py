@@ -1,8 +1,9 @@
 from rest_framework import serializers
+from rest_framework_gis.serializers import GeoModelSerializer
 from .models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(GeoModelSerializer):
     
     class Meta:
         model = User
