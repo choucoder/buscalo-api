@@ -10,6 +10,7 @@ from .models import Product
 from .serializers import ListProductSerializer, CreateProductSerializer
 from .permissions import IsProductOwner
 from apps.shops.models import Shop
+from apps.shops.permissions import IsShopOwner
 
 
 class ProductsAPIView(APIView):
@@ -21,7 +22,7 @@ class ProductsAPIView(APIView):
         data = request.data
         user = request.user
 
-        if 'location' in data or user.location:
+        if 'location' in data and user.location:
             if 'location' in data:
                 point = Point(*data.pop('location'))
             else:
@@ -35,7 +36,6 @@ class ProductsAPIView(APIView):
             products = Product.objects.filter(shop__in=shops, **data)
         else:
             products = Product.objects.filter(**data)
-        
         serializer = self.serializer(products, many=True)
         return Response({'data': serializer.data}, status=status.HTTP_200_OK)
     
@@ -46,7 +46,7 @@ class ShopProductsAPIView(APIView):
         'create': CreateProductSerializer,
     }
     default_serializer_class = ListProductSerializer
-    permission_classes = (IsProductOwner, )
+    permission_classes = (IsShopOwner, )
 
     def get_serializer_class(self, action):
         return self.serializer_classes.get(action, self.default_serializer_class)
@@ -54,6 +54,7 @@ class ShopProductsAPIView(APIView):
     def post(self, request, shop_pk):
         data = request.data
         shop = get_object_or_404(Shop, pk=shop_pk)
+        self.check_object_permissions(request, shop)
         serializer = self.get_serializer_class('create')(data=data)
 
         if serializer.is_valid():
@@ -61,7 +62,7 @@ class ShopProductsAPIView(APIView):
             serializer = self.get_serializer_class('list')(instance=product)
             return Response(
                 {'data': serializer.data},
-                status=status.HTTP_200_OK
+                status=status.HTTP_201_CREATED
             )
         else:
             return Response({'data': serializer.data}, status=status.HTTP_200_OK)
@@ -81,7 +82,7 @@ class ProductAPIView(APIView):
         'create': CreateProductSerializer
     }
     default_serializer_class = ListProductSerializer
-    permission_class = (IsProductOwner, )
+    permission_classes = (IsProductOwner, )
 
     def get_serializer_class(self, action):
         return self.serializer_classes.get(action, self.default_serializer_class)

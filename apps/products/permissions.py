@@ -18,6 +18,7 @@ class IsProductOwner(permissions.BasePermission):
             return True
 
         shops = Shop.objects.filter(user=request.user)
+
         if obj.shop in shops:
             return True
 
