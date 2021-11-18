@@ -90,3 +90,18 @@ class ShopAPIView(APIView):
         self.check_object_permissions(request, shop)
         shop.delete()
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+class MeShopsAPIView(APIView):
+
+    serializer_class = ListShopSerializer
+    permission_classes = (IsShopOwner, )
+
+    def get(self, request):
+        shops = Shop.objects.filter(user=request.user)
+        serializer = self.serializer_class(shops, many=True)
+
+        return Response(
+            {'data': serializer.data},
+            status=status.HTTP_200_OK
+        )
