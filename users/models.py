@@ -74,6 +74,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.first_name
 
+    def post_charge(self, post):
+        if post.notify_type == 1:
+            self.push_post_amount -= 1
+            super().save()
+
     def __str__(self):
         return "{tg_user_id}, {first_name}, {type}, {is_verified}".format(
             tg_user_id=self.telegram_user_id,
