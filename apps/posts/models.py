@@ -15,12 +15,12 @@ class Post(models.Model):
     FEED = 0
     PUSH = 1
     # Post type choices
-    PRODUCT = 0
-    HISTORY = 1
+    HISTORY = 0
+    PRODUCT = 1
 
     type_choices = [
-        (PRODUCT, 'PRODUCT'),
         (HISTORY, 'HISTORY'),
+        (PRODUCT, 'PRODUCT'),
     ]
     notify_type_choices = [
         (FEED, 'FEED'),

@@ -1,3 +1,153 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-# Create your views here.
+from apps.posts.utils import has_text_or_photo, is_allowed_to_post
+from apps.products.serializers import CreateProductSerializer
+
+from .models import Post
+from .serializers import CreatePostSerializer, ListPostSerializer
+from .permissions import IsPostOwner
+from apps.products.models import Product
+from apps.products.permissions import IsProductOwner
+from users.models import User
+
+
+class PostsAPIView(APIView):
+    serializer_classes = {
+        'list': ListPostSerializer,
+        'create': CreatePostSerializer
+    }
+    default_serializer_class = CreatePostSerializer
+    permission_classes = (IsPostOwner, )
+
+    def get_serializer_class(self, action):
+        return self.serializer_classes.get(action, self.default_serializer_class)
+
+    def get(self, request):
+        # Los post se ordenaran de acuerdo al rango de distancia
+        posts = Post.objects.all()
+        for post in posts:
+            if request.user != post.user:
+                post.views += 1
+                post.save()
+
+        serializer = self.get_serializer_class('list')(posts, many=True)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+    def post(self, request):
+        """
+        Formulario para crear un post
+        1) Postear => Historia, Producto
+        2) Historia => Seleccione texto, seleccione imagen
+        3) Producto => Tienda => Buscar Producto (Seleccionar todos)
+        4) Postear
+        Los posts se hacen tambien con una imagen
+        Postear una historia (texto, foto)
+        """
+        data = request.data
+        has_text_or_photo(data)
+        serializer = self.get_serializer_class('create')(data=data)
+
+        if serializer.is_valid():
+            is_allowed_to_post(data, request.user)
+            post = serializer.save(user=request.user)
+            user = request.user
+            user.post_charge(post)
+            return Response(
+                {"data": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {"data": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class PostAPIView(APIView):
+    permission_classes = (IsPostOwner, )
+    serializer_classes = {
+        'list': ListPostSerializer,
+        'create': CreatePostSerializer
+    }
+    default_serializer_class = CreatePostSerializer
+
+    def get_serializer_class(self, action):
+        return self.serializer_classes.get(action, self.default_serializer_class)
+        
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        serializer = self.get_serializer_class('list')(post)
+
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+    
+    def patch(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        self.check_object_permissions(request, post)
+        serializer = self.get_serializer_class('create')(post, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        else:
+            return Response({'data': serializer.data}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        self.check_object_permissions(request, post)
+        post.delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+class MePostAPIView(APIView):
+
+    serializer_class = CreatePostSerializer
+    permission_classes = (IsPostOwner, )
+
+    def get(self, request):
+        posts = Post.objects.filter(user=request.user)
+        serializer = self.serializer_class(instance=posts, many=True)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+class PostProductsAPIView(APIView):
+    serializer_classes = {
+        'list': ListPostSerializer,
+        'create': CreatePostSerializer
+    }
+    default_serializer_class = CreatePostSerializer
+    permission_classes = (IsProductOwner, )
+
+    def get_serializer_class(self, action):
+        return self.serializer_classes.get(action, self.default_serializer_class)
+
+    def post(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        self.check_object_permissions(request, product)
+        data = request.data
+        data['type'] = Post.PRODUCT
+        serializer = self.get_serializer_class('create')(data=request.data)
+
+        if serializer.is_valid():
+            is_allowed_to_post(request.data, request.user)
+            post = serializer.save(
+                user=request.user,
+                shop=product.shop,
+                product=product
+            )
+            user = request.user
+            user.post_charge(post)
+            serializer = self.get_serializer_class('list')(post)
+            return Response(
+                {'data': serializer.data},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {'data': serializer.data},
+                status=status.HTTP_201_CREATED
+            )
