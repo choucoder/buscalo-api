@@ -108,3 +108,14 @@ class ProductAPIView(APIView):
         self.check_object_permissions(request, product)
         product.delete()
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+class MeProductsAPIView(APIView):
+    serializer_class = CreateProductSerializer
+    permission_classes = (IsProductOwner, )
+
+    def get(self, request):
+        shops = Shop.objects.filter(user=request.user)
+        products = Product.objects.filter(shop__in=shops)
+        serializer = self.serializer_class(products, many=True)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
