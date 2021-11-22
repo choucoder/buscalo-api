@@ -27,7 +27,7 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
     details = models.CharField(max_length=255, null=True)
-    products = models.ManyToManyField(Product, through='OrderProduct')
+    products = models.ManyToManyField(Product, through='OrderProduct', related_name='products')
 
     total_order_price = models.FloatField(default=0)
     created_at = models.DateTimeField(auto_now=True)
