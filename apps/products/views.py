@@ -9,36 +9,41 @@ from rest_framework import status
 from .models import Product
 from .serializers import ListProductSerializer, CreateProductSerializer
 from .permissions import IsProductOwner
+from .filters import ProductFilter
 from apps.shops.models import Shop
 from apps.shops.permissions import IsShopOwner
+from core.views import PaginateAPIView
+from users.models import SearchSetting
 
 
-class ProductsAPIView(APIView):
+class ProductsAPIView(PaginateAPIView):
 
     serializer = ListProductSerializer
     permission_classes = (IsProductOwner, )
 
     def get(self, request):
-        data = request.data
         user = request.user
+        settings = SearchSetting.objects.filter(user=user).first()
+        location = user.location if not settings.location else settings.location
 
-        if 'location' in data and user.location:
-            if 'location' in data:
-                point = Point(*data.pop('location'))
-            else:
-                point = user.location
+        if location:
             shops = Shop.objects.filter(
                 location__distance_lt=(
-                    point,
-                    Distance(m=5000)
+                    location,
+                    Distance(m=settings.distance)
                 )
             )
-            products = Product.objects.filter(shop__in=shops, **data)
+            products = Product.objects.filter(shop__in=shops)
         else:
-            products = Product.objects.filter(**data)
-        serializer = self.serializer(products, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
-    
+            products = Product.objects.all()
+
+        f = ProductFilter(request.GET, queryset=products)
+        page = self.paginate_queryset(f.qs.order_by('created_at'))
+
+        if page is not None:
+            serializer = self.serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
 
 class ShopProductsAPIView(APIView):
     serializer_classes = {
