@@ -3,9 +3,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from apps.orders.utils import abort_if_order_is_finished
+
 from .serializers import *
 from .models import Order, OrderProduct
+from .permissions import IsOrderOwner
 from apps.products.models import Product
+from apps.shops.models import Shop
 
 class OrderProductsAPIView(APIView):
     permission_classes = ()
@@ -43,7 +47,8 @@ class OrderProductsAPIView(APIView):
                         {'data': {"message": "You only can to add products of the same store"}},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-            
+
+            abort_if_order_is_finished(order)
             o_products = OrderProduct.objects.filter(
                 order=order, product=product
             )
@@ -74,4 +79,92 @@ class MeOrdersAPIView(APIView):
         orders = Order.objects.filter(user=request.user)
         serializer = OrderSerializer(orders, many=True)
                            
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+
+class OrderDetailsAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = (IsOrderOwner, )
+
+    def get(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+        serializer = self.serializer_class(order)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+
+class CompleteOrderAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = (IsOrderOwner, )
+
+    def post(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+
+        if order.status != Order.CREATED:
+            return Response(
+                {"data": {"message": f"The order has already been marked as {order.get_status_display()}"}},
+                status=status.HTTP_400_BAD_REQUEST 
+            )
+        
+        order.status = Order.COMPLETED
+        order.save()
+        serializer = self.serializer_class(order)
+        return Response(
+            {"data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+class CancelOrderAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = (IsOrderOwner, )
+
+    def post(self, request, pk):
+        order = get_object_or_404(Order, pk=pk)
+        self.check_object_permissions(request, order)
+
+        if order.status != Order.CREATED:
+            return Response(
+                {"data": {"message": f"The order has already been marked as {order.get_status_display()}"}},
+                status=status.HTTP_400_BAD_REQUEST 
+            )
+        
+        order.status = Order.CANCELLED
+        order.save()
+        serializer = self.serializer_class(order)
+        return Response(
+            {"data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+class OrderProductAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = (IsOrderOwner, )
+
+    def delete(self, request, order_pk, product_pk):
+        order = get_object_or_404(Order, pk=order_pk)
+        self.check_object_permissions(request, order)
+        abort_if_order_is_finished(order)
+        order_product = get_object_or_404(OrderProduct, order=order, pk=product_pk)
+        order_product.delete()
+        order.update_total_price()
+        serializer = self.serializer_class(order)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+    def get(self, request, order_pk, product_pk):
+        order = get_object_or_404(Order, pk=order_pk)
+        self.check_object_permissions(request, order)
+        order_product = get_object_or_404(OrderProduct, order=order, pk=product_pk)
+        serializer = ManyToManyOrderProductSerializer(order_product)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+
+class MeOrdersStoresAPIView(APIView):
+    serializer_class = OrderSerializer
+    permission_classes = (IsOrderOwner, )
+
+    def get(self, request, shop_pk):
+        shop = get_object_or_404(Shop, pk=shop_pk, user=request.user)
+        orders = Order.objects.filter(shop=shop)
+        serializer = self.serializer_class(orders, many=True)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
