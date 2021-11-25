@@ -104,3 +104,27 @@ class UserVerification(models.Model):
             key=self.key,
             created_at=self.created_at
         )
+
+
+class SearchSetting(models.Model):
+    id = ShortUUIDField(
+        length=16,
+        max_length=32,
+        unique=True,
+        editable=False,
+        alphabet='012345679',
+        primary_key=True,
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    location = models.PointField(geography=True, blank=True, null=True)
+    distance = models.IntegerField(default=5000)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{user}, {location}, {distance}".format(
+            user=f"{self.user.first_name}, {self.telegram_username}",
+            key=self.location,
+            created_at=self.distance
+        )

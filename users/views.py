@@ -1,3 +1,4 @@
+from functools import partial
 from django.shortcuts import render, get_object_or_404
 from rest_framework import permissions, serializers
 from rest_framework.views import APIView
@@ -5,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
-from .models import User
-from .serializers import UserSerializer
+from .models import SearchSetting, User
+from .serializers import SearchSettingSerializer, UserSerializer
 from .permissions import IsAllowedUser
 
 
@@ -36,6 +37,7 @@ class UsersApiView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            SearchSetting(user=user).save()
             reply['data'] = serializer.data
             return Response(reply, status=status.HTTP_201_CREATED)
         else:
@@ -72,3 +74,25 @@ class UserAPIView(APIView):
         user.delete()
 
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+class MeUserSearchSettings(APIView):
+    serializer_class = SearchSettingSerializer
+
+    def patch(self, request):
+        settings = SearchSetting.objects.filter(user=request.user).first()
+        serializer = self.serializer_class(settings, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"data": serializer.data},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+ 
+    def get(self, request):
+        settings = get_object_or_404(SearchSetting, user=request.user)
+        serializer = self.serializer_class(settings)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)

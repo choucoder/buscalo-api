@@ -1,5 +1,5 @@
 from rest_framework_gis.serializers import GeoModelSerializer
-from .models import User
+from .models import SearchSetting, User
 
 
 class UserSerializer(GeoModelSerializer):
@@ -39,3 +39,10 @@ class UserSerializer(GeoModelSerializer):
         user.save()
 
         return user
+
+
+class SearchSettingSerializer(GeoModelSerializer):
+    
+    class Meta:
+        model = SearchSetting
+        exclude = ['user']
