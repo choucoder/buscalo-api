@@ -56,6 +56,10 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(auto_now=True)
 
+    def set_view(self, request):
+        self.views += 1
+        super().save()
+
     def __str__(self):
         if self.type_choices == self.PRODUCT:
             return "{shop}, {product}, {type}, {notify_type}".format(

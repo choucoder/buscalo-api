@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.core.paginator import Page
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
 from rest_framework.views import APIView
@@ -9,12 +11,14 @@ from apps.products.serializers import CreateProductSerializer
 from .models import Post
 from .serializers import CreatePostSerializer, ListPostSerializer
 from .permissions import IsPostOwner
+from .filters import PostFilter
 from apps.products.models import Product
 from apps.products.permissions import IsProductOwner
 from users.models import User
+from core.views import PaginateAPIView
 
 
-class PostsAPIView(APIView):
+class PostsAPIView(PaginateAPIView):
     serializer_classes = {
         'list': ListPostSerializer,
         'create': CreatePostSerializer
@@ -28,14 +32,15 @@ class PostsAPIView(APIView):
     def get(self, request):
         # Los post se ordenaran de acuerdo al rango de distancia
         posts = Post.objects.all()
-        for post in posts:
+        f = PostFilter(request.GET, queryset=posts)
+        page = self.paginate_queryset(f.qs.order_by('-created_at'))
+        for post in page:
             if request.user != post.user:
-                post.views += 1
-                post.save()
+                post.set_view(request.user)
 
-        serializer = self.get_serializer_class('list')(posts, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
-
+        if page is not None:
+            serializer = self.get_serializer_class('list')(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
