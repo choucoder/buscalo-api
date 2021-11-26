@@ -108,7 +108,7 @@ class PostAPIView(APIView):
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
-class MePostAPIView(APIView):
+class MePostsAPIView(APIView):
 
     serializer_class = CreatePostSerializer
     permission_classes = (IsPostOwner, )
