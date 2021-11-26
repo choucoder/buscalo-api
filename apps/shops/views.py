@@ -37,6 +37,7 @@ class ShopsAPIView(APIView):
 
         if serializer.is_valid():
             shop = serializer.save(user=request.user)
+            shop.update_address()
             serializer = self.get_serializer_class('list')(instance=shop)
             return Response(
                 {'data': serializer.data},
@@ -69,6 +70,7 @@ class ShopAPIView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+            shop.update_address()
             return Response(
                 {'data': serializer.data},
                 status=status.HTTP_200_OK
