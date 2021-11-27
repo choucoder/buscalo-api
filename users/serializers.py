@@ -1,9 +1,12 @@
 from rest_framework_gis.serializers import GeoModelSerializer
+
 from .models import SearchSetting, User
+from core.serializers import AddressSerializer
 
 
 class UserSerializer(GeoModelSerializer):
-    
+    address = AddressSerializer(many=False, read_only=True)
+        
     class Meta:
         model = User
         fields = (
@@ -18,7 +21,8 @@ class UserSerializer(GeoModelSerializer):
             'photo',
             'location',
             'is_verified',
-            'date_joined'
+            'date_joined',
+            'address',
         )
 
     def create(self, validated_data):

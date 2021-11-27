@@ -57,6 +57,7 @@ class UserAPIView(APIView):
 
         if serializer.is_valid():
             serializer.save()
+            user.update_address()
             return Response(
                 {"status": "success", "data": serializer.data},
                 status=status.HTTP_200_OK
@@ -80,11 +81,14 @@ class MeUserSearchSettings(APIView):
     serializer_class = SearchSettingSerializer
 
     def patch(self, request):
-        settings = SearchSetting.objects.filter(user=request.user).first()
+        user = request.user
+        settings = SearchSetting.objects.filter(user=user).first()
         serializer = self.serializer_class(settings, data=request.data, partial=True)
         
         if serializer.is_valid():
             serializer.save()
+            user.update_address()
+            
             return Response(
                 {"data": serializer.data},
                 status=status.HTTP_200_OK
