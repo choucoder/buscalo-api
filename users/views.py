@@ -45,13 +45,18 @@ class UsersApiView(APIView):
             return Response(reply, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserAPIView(APIView):
+class MeUserAPIView(APIView):
 
     serializers_class = UserSerializer
     permission_classes = (IsAllowedUser, )
 
-    def patch(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        user = request.user
         self.check_object_permissions(request, user)
         serializer = UserSerializer(user, data=request.data, partial=True)
 
@@ -69,8 +74,8 @@ class UserAPIView(APIView):
             )
 
     
-    def delete(self, request, pk):
-        user = get_object_or_404(User, pk=pk)
+    def delete(self, request):
+        user = request.user
         self.check_object_permissions(request, user)
         user.delete()
 
@@ -88,7 +93,7 @@ class MeUserSearchSettings(APIView):
         if serializer.is_valid():
             serializer.save()
             user.update_address()
-            
+
             return Response(
                 {"data": serializer.data},
                 status=status.HTTP_200_OK

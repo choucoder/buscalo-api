@@ -13,6 +13,6 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('test/', TestAPIView.as_view(), name='test'),
     path('users/', UsersApiView.as_view(), name='users'),
-    path('users/<int:pk>', UserAPIView.as_view(), name='user'),
+    path('me', MeUserAPIView.as_view(), name='user'),
     path('me/settings', MeUserSearchSettings.as_view(), name='me_search_settings_apiview'),
 ]
