@@ -1,7 +1,16 @@
+from shortuuid.django_fields import ShortUUIDField
 from django.db import models
 
 
 class Address(models.Model):
+    id = ShortUUIDField(
+        length=16,
+        max_length=32,
+        primary_key=True,
+        editable=False,
+        alphabet='0123456789'
+    )
+
     country = models.CharField(
         max_length=32
     )
