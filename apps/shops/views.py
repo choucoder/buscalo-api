@@ -32,11 +32,15 @@ class ShopsAPIView(APIView):
         )
 
     def post(self, request):
+        user = request.user
         data = request.data
         serializer = self.get_serializer_class('create')(data=data)
 
         if serializer.is_valid():
-            shop = serializer.save(user=request.user)
+            if not "location" in data:
+                shop = serializer.save(user=user, location=user.location)
+            else:
+                shop = serializer.save(user=user)
             shop.update_address()
             serializer = self.get_serializer_class('list')(instance=shop)
             return Response(
