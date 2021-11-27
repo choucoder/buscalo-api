@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.utils import timezone
 from django.contrib.gis.db import models
+from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
 
 from users.models import User
@@ -46,6 +47,8 @@ class Post(models.Model):
     )
     text = models.CharField(max_length=255, null=True)
     photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
+    location = models.PointField(geography=True, blank=True, null=True)
+
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,

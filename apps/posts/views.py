@@ -1,20 +1,17 @@
-from django.conf import settings
-from django.core.paginator import Page
+from django.contrib.gis.measure import Distance
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from apps.posts.utils import has_text_or_photo, is_allowed_to_post
-from apps.products.serializers import CreateProductSerializer
-
 from .models import Post
 from .serializers import CreatePostSerializer, ListPostSerializer
 from .permissions import IsPostOwner
 from .filters import PostFilter
 from apps.products.models import Product
 from apps.products.permissions import IsProductOwner
-from users.models import User
+from users.models import SearchSetting
 from core.views import PaginateAPIView
 
 
@@ -30,8 +27,20 @@ class PostsAPIView(PaginateAPIView):
         return self.serializer_classes.get(action, self.default_serializer_class)
 
     def get(self, request):
-        # Los post se ordenaran de acuerdo al rango de distancia
-        posts = Post.objects.all()
+        user = request.user
+        settings = SearchSetting.objects.filter(user=user).first()
+        me_location = user.location if not settings.location else settings.location
+
+        if me_location:
+            posts = Post.objects.filter(
+                location__distance_lt=(
+                    me_location,
+                    Distance(m=settings.distance)
+                )
+            )
+        else:
+            posts = Post.objects.all()
+
         f = PostFilter(request.GET, queryset=posts)
         page = self.paginate_queryset(f.qs.order_by('-created_at'))
         for post in page:
@@ -58,8 +67,8 @@ class PostsAPIView(PaginateAPIView):
 
         if serializer.is_valid():
             is_allowed_to_post(data, request.user)
-            post = serializer.save(user=request.user)
             user = request.user
+            post = serializer.save(user=user, location=user.location)
             user.post_charge(post)
             return Response(
                 {"data": serializer.data},
@@ -139,10 +148,13 @@ class PostProductsAPIView(APIView):
 
         if serializer.is_valid():
             is_allowed_to_post(request.data, request.user)
+            shop = product.shop
+            user = request.user
             post = serializer.save(
                 user=request.user,
                 shop=product.shop,
-                product=product
+                product=product,
+                location=shop.location if shop.location else user.location
             )
             user = request.user
             user.post_charge(post)
