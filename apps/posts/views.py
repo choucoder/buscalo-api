@@ -52,15 +52,6 @@ class PostsAPIView(PaginateAPIView):
             return self.get_paginated_response(serializer.data)
 
     def post(self, request):
-        """
-        Formulario para crear un post
-        1) Postear => Historia, Producto
-        2) Historia => Seleccione texto, seleccione imagen
-        3) Producto => Tienda => Buscar Producto (Seleccionar todos)
-        4) Postear
-        Los posts se hacen tambien con una imagen
-        Postear una historia (texto, foto)
-        """
         data = request.data
         has_text_or_photo(data)
         serializer = self.get_serializer_class('create')(data=data)
