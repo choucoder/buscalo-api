@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'apps.posts',
     'apps.orders',
     'apps.services',
+    'apps.feeds',
 ]
 
 MIDDLEWARE = [
