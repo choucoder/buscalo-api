@@ -50,7 +50,10 @@ class Order(models.Model):
 
     def update_total_price(self):
         total = OrderProduct.objects.filter(order=self).aggregate(Sum('total'))
-        self.total_order_price = total['total__sum']
+        if total['total__sum'] == None:
+            self.total_order_price = 0
+        else:
+            self.total_order_price = total['total__sum']
         super().save()
 
     def __str__(self):

@@ -97,7 +97,7 @@ class CompleteOrderAPIView(APIView):
     serializer_class = OrderSerializer
     permission_classes = (IsOrderOwner, )
 
-    def post(self, request, pk):
+    def patch(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
 
@@ -119,7 +119,7 @@ class CancelOrderAPIView(APIView):
     serializer_class = OrderSerializer
     permission_classes = (IsOrderOwner, )
 
-    def post(self, request, pk):
+    def patch(self, request, pk):
         order = get_object_or_404(Order, pk=pk)
         self.check_object_permissions(request, order)
 
@@ -148,6 +148,10 @@ class OrderProductAPIView(APIView):
         order_product = get_object_or_404(OrderProduct, order=order, pk=product_pk)
         order_product.delete()
         order.update_total_price()
+        # Si la orden ya no tiene productos, esta se marca como cancelada
+        if not order.products.all():
+            order.status = Order.CANCELLED
+            order.save()
         serializer = self.serializer_class(order)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
