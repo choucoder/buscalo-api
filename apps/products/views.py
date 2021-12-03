@@ -2,16 +2,18 @@ from django.contrib.gis.measure import Distance
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers
+from rest_framework import response
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import Product
-from .serializers import ListProductSerializer, CreateProductSerializer
+from .models import Product, Rating
+from .serializers import ListProductSerializer, CreateProductSerializer, RatingSerializer
 from .permissions import IsProductOwner
 from .filters import ProductFilter
 from apps.shops.models import Shop
 from apps.shops.permissions import IsShopOwner
+from apps.orders.models import Order, OrderProduct
 from core.views import PaginateAPIView
 from users.models import SearchSetting
 
@@ -124,3 +126,37 @@ class MeProductsAPIView(APIView):
         products = Product.objects.filter(shop__in=shops)
         serializer = self.serializer_class(products, many=True)
         return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+
+
+class ProductRatingAPIView(APIView):
+    serializer_class = RatingSerializer
+
+    def patch(self, request, pk):
+        product = get_object_or_404(Product, pk=pk)
+        user = request.user
+        order_products = OrderProduct.objects.filter(
+            product=product,
+            order__user=user,
+            order__status=Order.COMPLETED
+        )
+        if order_products:
+            rating = Rating.objects.filter(user=user, product=product).first()
+            if not rating:
+                serializer = self.serializer_class(data=request.data)
+            else:
+                serializer = self.serializer_class(rating, data=request.data, partial=True)
+            if serializer.is_valid():
+                _ = serializer.save(user=user, product=product)
+                serializer = CreateProductSerializer(product)
+                return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "data": {serializer.errors}},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            return Response({
+                "data": {"message": "You dont have a completed order that included this product"}},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
