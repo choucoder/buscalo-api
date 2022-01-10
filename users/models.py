@@ -39,6 +39,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         (REGULAR, 'REGULAR'),
     ]
 
+    gender_choices = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+        ('Other', 'Other')
+    ]
+
     type = models.PositiveSmallIntegerField(
         default=type_choices[0][0],
         choices=type_choices
@@ -46,6 +52,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150, blank=True)
+    birthdate = models.DateField(blank=True, null=True)
+    gender = models.CharField(max_length=16, choices=gender_choices, default=gender_choices[2][0])
     email = models.EmailField(blank=True)
     photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     

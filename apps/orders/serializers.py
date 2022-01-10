@@ -41,7 +41,6 @@ class OrderSerializer(serializers.ModelSerializer):
             'shop',
             'status',
             'total_order_price',
-            'products'
         )
 
     def to_representation(self, instance):

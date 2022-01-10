@@ -1,4 +1,5 @@
 from rest_framework_gis.serializers import GeoModelSerializer
+from rest_framework.serializers import DateField
 
 from .models import SearchSetting, User
 from core.serializers import AddressSerializer
@@ -6,7 +7,8 @@ from core.serializers import AddressSerializer
 
 class UserSerializer(GeoModelSerializer):
     address = AddressSerializer(many=False, read_only=True)
-        
+    birthdate = DateField(format='%d-%m-%Y')
+
     class Meta:
         model = User
         fields = (
@@ -23,6 +25,8 @@ class UserSerializer(GeoModelSerializer):
             'is_verified',
             'date_joined',
             'address',
+            'gender',
+            'birthdate',
         )
 
     def create(self, validated_data):
@@ -37,6 +41,15 @@ class UserSerializer(GeoModelSerializer):
         if 'last_name' in validated_data:
             user.last_name = validated_data['last_name']
 
+        if 'location' in validated_data:
+            user.location = validated_data['location']
+        
+        if 'gender' in validated_data:
+            user.gender = validated_data['gender']
+
+        if 'birthdate' in validated_data:
+            user.birthdate = validated_data['birthdate']
+            
         user.is_staff = False
         user.is_verified = False
         user.set_password(validated_data['telegram_user_id'])

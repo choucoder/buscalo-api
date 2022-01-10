@@ -11,6 +11,7 @@ from .permissions import IsOrderOwner
 from apps.products.models import Product
 from apps.shops.models import Shop
 
+
 class OrderProductsAPIView(APIView):
     permission_classes = ()
     serializer_classes = {
@@ -149,9 +150,12 @@ class OrderProductAPIView(APIView):
         order_product.delete()
         order.update_total_price()
         # Si la orden ya no tiene productos, esta se marca como cancelada
-        if not order.products.all():
+        order_products = OrderProduct.objects.filter(order=order)
+
+        if not order_products:
             order.status = Order.CANCELLED
             order.save()
+
         serializer = self.serializer_class(order)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 

@@ -37,7 +37,10 @@ class UsersApiView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            SearchSetting(user=user).save()
+            if user.location:
+                user.update_address()
+            SearchSetting(user=user, location=user.location).save()
+            
             reply['data'] = serializer.data
             return Response(reply, status=status.HTTP_201_CREATED)
         else:
