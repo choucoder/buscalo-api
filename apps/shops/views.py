@@ -111,3 +111,14 @@ class MeShopsAPIView(APIView):
             {'data': serializer.data},
             status=status.HTTP_200_OK
         )
+
+
+class MeShopAPIView(APIView):
+
+    serializer_class = ListShopSerializer
+    permission_classes = (IsShopOwner, )
+
+    def get(self, request):
+        shop = get_object_or_404(Shop, user=request.user)
+        serializer = self.get_serializer_class('list')(instance=shop)
+        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
