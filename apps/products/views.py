@@ -47,7 +47,7 @@ class ProductsAPIView(PaginateAPIView):
             return self.get_paginated_response(serializer.data)
 
 
-class ShopProductsAPIView(APIView):
+class ShopProductsAPIView(PaginateAPIView):
     serializer_classes = {
         'list': ListProductSerializer,
         'create': CreateProductSerializer,
@@ -78,9 +78,13 @@ class ShopProductsAPIView(APIView):
         data = request.data
         shop = get_object_or_404(Shop, pk=shop_pk)
         products = Product.objects.filter(shop=shop, **data)
-        serializer = self.get_serializer_class('list')(products, many=True)
+        
+        f = ProductFilter(request.GET, queryset=products)
+        page = self.paginate_queryset(f.qs.order_by('created_at'))
 
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        if page is not None:
+            serializer = self.get_serializer_class('list')(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
 
 class ProductAPIView(APIView):
