@@ -98,8 +98,8 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.push_post_amount -= 1
             super().save()
 
-    def update_address(self):
-        if self.location and not self.address:
+    def update_address(self, is_location=True):
+        if self.location and is_location:
             try:
                 locator = Nominatim(user_agent="google")
                 coords = [str(coord) for coord in self.location.coords]
@@ -108,17 +108,36 @@ class User(AbstractBaseUser, PermissionsMixin):
                 location = locator.reverse(str_coords)
                 data = location.raw
                 if data:
-                    address = Address(
-                        country=clean_str(data['address'].get('country', "")),
-                        country_code=clean_str(data['address'].get('country_code', "")),
-                        state=clean_str(data['address'].get('state', "")),
-                        city=clean_str(data['address'].get('county', "")),
-                        address=data.get('display_name', "")
-                    )
-                    address.save()
-                    self.address = address
-                super().save()
-            except Exception as e:
+                    if not self.address:
+                        address = Address(
+                            country=clean_str(data['address'].get('country', "")),
+                            country_code=clean_str(data['address'].get('country_code', "")),
+                            state=clean_str(data['address'].get('state', "")),
+                            city=clean_str(data['address'].get('county', "")),
+                            address=data.get('display_name', "")
+                        )
+                        address.save()
+                        self.address = address
+                        super().save()
+                    else:
+                        country = clean_str(data['address'].get('country', ""))
+                        country_code = clean_str(data['address'].get('country_code', ""))
+                        state = clean_str(data['address'].get('state', ""))
+                        city = clean_str(data['address'].get('county', ""))
+                        addr = clean_str(data.get('display_name', ""))
+
+                        Address.objects.filter(id=self.address.id).delete()
+                        address = Address(
+                            country=country,
+                            country_code=country_code,
+                            state=state,
+                            city=city,
+                            address=addr
+                        )
+                        address.save()
+                        self.address = address
+                        super().save()
+            except:
                 pass
 
     def __str__(self):

@@ -55,13 +55,24 @@ class Shop(models.Model):
                         self.address = address
                         super().save()
                     else:
-                        self.address.country = clean_str(data['address'].get('country', "")),
-                        self.address.country_code = clean_str(data['address'].get('country_code', "")),
-                        self.address.state = clean_str(data['address'].get('state', "")),
-                        self.address.city = clean_str(data['address'].get('county', "")),
-                        self.address.address = data.get('display_name', "")
-                        self.address.save()
-            except:
+                        country = clean_str(data['address'].get('country', ""))
+                        country_code = clean_str(data['address'].get('country_code', ""))
+                        state = clean_str(data['address'].get('state', ""))
+                        city = clean_str(data['address'].get('county', ""))
+                        addr = clean_str(data.get('display_name', ""))
+
+                        Address.objects.filter(id=self.address.id).delete()
+                        address = Address(
+                            country=country,
+                            country_code=country_code,
+                            state=state,
+                            city=city,
+                            address=addr
+                        )
+                        address.save()
+                        self.address = address
+                        super().save()
+            except Exception as e:
                 pass
 
     def __str__(self):

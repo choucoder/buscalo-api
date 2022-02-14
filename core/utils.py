@@ -14,4 +14,5 @@ def generate_random_uuid():
 
 
 def clean_str(text: str) -> str:
-    return ' '.join(re.findall('\w+', text))
+    cleaned = ' '.join(re.findall('\w+', text))
+    return cleaned
