@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
+from core.models import Currency
+
 from .models import Shop
 from .serializers import ListShopSerializer, CreateShopSerializer
 from .permissions import IsShopOwner
@@ -41,7 +43,8 @@ class ShopsAPIView(APIView):
                 shop = serializer.save(user=user, location=user.location)
             else:
                 shop = serializer.save(user=user)
-            shop.update_address()
+            shop.update_address(is_location=True)
+
             serializer = self.get_serializer_class('list')(instance=shop)
             return Response(
                 {'data': serializer.data},
@@ -69,12 +72,23 @@ class ShopAPIView(APIView):
 
     def patch(self, request, pk):
         shop = get_object_or_404(Shop, pk=pk)
+        data = request.data
+        currency = data.pop('currency', None)
+        is_location = bool(data.get('location', ""))
+
         self.check_object_permissions(request, shop)
-        serializer = self.get_serializer_class('create')(shop, data=request.data, partial=True)
+        serializer = self.get_serializer_class('create')(shop, data=data, partial=True)
 
         if serializer.is_valid():
+            if currency:
+                currency = Currency.objects.filter(code=currency).first()
+                if currency:
+                    shop.currency = currency
+                    shop.update()
+
             serializer.save()
-            shop.update_address()
+            shop.update_address(is_location=is_location)
+            
             return Response(
                 {'data': serializer.data},
                 status=status.HTTP_200_OK

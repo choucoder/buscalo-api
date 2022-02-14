@@ -1,0 +1,134 @@
+[
+  {
+    "code": "ARS",
+    "name": "Argentine Peso",
+    "country": "Argentina",
+    "country_code": "AR"
+  },
+  {
+    "code": "BOB",
+    "name": "Bolivian Boliviano",
+    "country": "Bolivia",
+    "country_code": "BO"
+  },
+  {
+    "code": "BRL",
+    "name": "Brazilian Real",
+    "country": "Brasil",
+    "country_code": "BR"
+  },
+  {
+    "code": "CLP",
+    "name": "Chilean Peso",
+    "country": "Chile",
+    "country_code": "CL"
+  },
+  {
+    "code": "COP",
+    "name": "Colombian Peso",
+    "country": "Colombia",
+    "country_code": "CO"
+  },
+  {
+    "code": "CRC",
+    "name": "Costa Rican Colón",
+    "country": "Costa Rica",
+    "country_code": "CR"
+  },
+  {
+    "code": "CUP",
+    "name": "Cuban Peso",
+    "country": "Cuba",
+    "country_code": "CU"
+  },
+  {
+    "code": "DOP",
+    "name": "Dominican Peso",
+    "country": "Republica Dominicana",
+    "country_code": "DO"
+  },
+  {
+    "code": "SVC",
+    "name": "Salvadoran Colon",
+    "country": "El Salvador",
+    "country_code": "SV"
+  },
+  {
+    "code": "EUR",
+    "name": "Euro",
+    "country": "Europa",
+    "country_code": "EUR"
+  },
+  {
+    "code": "GTQ",
+    "name": "Guatemalan Quetzal",
+    "country": "Guatemala",
+    "country_code": "GT"
+  },
+  {
+    "code": "HTG",
+    "name": "Haitian Gourde",
+    "country": "Haiti",
+    "country_code": "HT"
+  },
+  {
+    "code": "HNL",
+    "name": "Honduran Lempira",
+    "country": "Honduras",
+    "country_code": "HN"
+  },
+  {
+    "code": "MXN",
+    "name": "Mexican Peso",
+    "country": "Mexico",
+    "country_code": "MX"
+  },
+  {
+    "code": "NIO",
+    "name": "Nicaraguan Córdoba",
+    "country": "Nicaragua",
+    "country_code": "NI"
+  },
+  {
+    "code": "PAB",
+    "name": "Panamanian Balboa",
+    "country": "Panama",
+    "country_code": "PA"
+  },
+  {
+    "code": "PYG",
+    "name": "Paraguayan Guarani",
+    "country": "Paraguay",
+    "country_code": "PY"
+  },
+  {
+    "code": "PEN",
+    "name": "Peruvian Nuevo Sol",
+    "country": "Peru",
+    "country_code": "PE"
+  },
+  {
+    "code": "UYU",
+    "name": "Uruguayan Peso",
+    "country": "Uruguay",
+    "country_code": "UY"
+  },
+  {
+    "code": "VES",
+    "name": "Venezuelan Bolívar Soberano",
+    "country": "Venezuela",
+    "country_code": "VE"
+  },
+  {
+    "code": "USD",
+    "name": "United States Dollar",
+    "country": "Estados Unidos",
+    "country_code": "US"
+  },
+  {
+    "code": "CNY",
+    "name": "Chinese Yuan",
+    "country": "China",
+    "country_code": "CN"
+  }
+]

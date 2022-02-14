@@ -10,7 +10,7 @@ from shortuuid.django_fields import ShortUUIDField
 
 from users.models import User
 from core.utils import get_filename
-from core.models import Address
+from core.models import Address, Currency
 
 
 class Shop(models.Model):
@@ -26,14 +26,15 @@ class Shop(models.Model):
 
     address = models.OneToOneField(Address, on_delete=models.SET_NULL, blank=True, null=True)
     location = models.PointField(geography=True, blank=True, null=True)
+    currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, blank=True, null=True)
     logo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
-    def update_address(self):
-        if self.location and not self.address:
+    def update_address(self, is_location=False):
+        if self.location and is_location:
             try:
                 locator = Nominatim(user_agent="google")
                 coords = [str(coord) for coord in self.location.coords]
@@ -42,16 +43,24 @@ class Shop(models.Model):
                 location = locator.reverse(str_coords)
                 data = location.raw
                 if data:
-                    address = Address(
-                        country=data['address'].get('country', ""),
-                        country_code=data['address'].get('country_code', ""),
-                        state=data['address'].get('state', ""),
-                        city=data['address'].get('county', ""),
-                        address=data.get('display_name', "")
-                    )
-                    address.save()
-                    self.address = address
-                super().save()
+                    if not self.address:
+                        address = Address(
+                            country=data['address'].get('country', ""),
+                            country_code=data['address'].get('country_code', ""),
+                            state=data['address'].get('state', ""),
+                            city=data['address'].get('county', ""),
+                            address=data.get('display_name', "")
+                        )
+                        address.save()
+                        self.address = address
+                        super().save()
+                    else:
+                        self.address.country=data['address'].get('country', ""),
+                        self.address.country_code=data['address'].get('country_code', ""),
+                        self.address.state=data['address'].get('state', ""),
+                        self.address.city=data['address'].get('county', ""),
+                        self.address.address=data.get('display_name', "")
+                        self.address.save()
             except:
                 pass
 

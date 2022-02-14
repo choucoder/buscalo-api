@@ -29,3 +29,24 @@ class Address(models.Model):
             city=self.city,
             address=self.address
         )
+
+
+class Currency(models.Model):
+    id = ShortUUIDField(
+        length=4,
+        max_length=8,
+        primary_key=True,
+        editable=False,
+        alphabet='123456789'
+    )
+    code = models.CharField(max_length=8, unique=True)
+    name = models.CharField(max_length=32)
+    country = models.CharField(max_length=32)
+    country_code = models.CharField(max_length=4, unique=True)
+
+    def __str__(self):
+        return "{code}, {name}, {country}".format(
+            code=self.code,
+            name=self.name,
+            country=self.country
+        )
