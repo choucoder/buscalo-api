@@ -1,4 +1,5 @@
 from uuid import uuid4
+import re, locale
 
 
 def get_filename(instance, filename):
@@ -10,3 +11,7 @@ def get_filename(instance, filename):
 
 def generate_random_uuid():
     return str(uuid4())
+
+
+def clean_str(text: str) -> str:
+    return ' '.join(re.findall('\w+', text))

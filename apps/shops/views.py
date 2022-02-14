@@ -84,11 +84,14 @@ class ShopAPIView(APIView):
                 currency = Currency.objects.filter(code=currency).first()
                 if currency:
                     shop.currency = currency
-                    shop.update()
+                    shop.save()
+                    # shop.refresh_from_db()
 
             serializer.save()
             shop.update_address(is_location=is_location)
             
+            serializer = self.get_serializer_class('list')(instance=shop)
+
             return Response(
                 {'data': serializer.data},
                 status=status.HTTP_200_OK

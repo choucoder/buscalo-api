@@ -9,7 +9,7 @@ from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
 
 from users.models import User
-from core.utils import get_filename
+from core.utils import get_filename, clean_str
 from core.models import Address, Currency
 
 
@@ -45,21 +45,21 @@ class Shop(models.Model):
                 if data:
                     if not self.address:
                         address = Address(
-                            country=data['address'].get('country', ""),
-                            country_code=data['address'].get('country_code', ""),
-                            state=data['address'].get('state', ""),
-                            city=data['address'].get('county', ""),
+                            country=clean_str(data['address'].get('country', "")),
+                            country_code=clean_str(data['address'].get('country_code', "")),
+                            state=clean_str(data['address'].get('state', "")),
+                            city=clean_str(data['address'].get('county', "")),
                             address=data.get('display_name', "")
                         )
                         address.save()
                         self.address = address
                         super().save()
                     else:
-                        self.address.country=data['address'].get('country', ""),
-                        self.address.country_code=data['address'].get('country_code', ""),
-                        self.address.state=data['address'].get('state', ""),
-                        self.address.city=data['address'].get('county', ""),
-                        self.address.address=data.get('display_name', "")
+                        self.address.country = clean_str(data['address'].get('country', "")),
+                        self.address.country_code = clean_str(data['address'].get('country_code', "")),
+                        self.address.state = clean_str(data['address'].get('state', "")),
+                        self.address.city = clean_str(data['address'].get('county', "")),
+                        self.address.address = data.get('display_name', "")
                         self.address.save()
             except:
                 pass

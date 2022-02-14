@@ -6,7 +6,7 @@ from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
 
-from core.utils import get_filename, generate_random_uuid
+from core.utils import get_filename, generate_random_uuid, clean_str
 from core.models import Address
 
 
@@ -109,10 +109,10 @@ class User(AbstractBaseUser, PermissionsMixin):
                 data = location.raw
                 if data:
                     address = Address(
-                        country=data['address'].get('country', ""),
-                        country_code=data['address'].get('country_code', ""),
-                        state=data['address'].get('state', ""),
-                        city=data['address'].get('county', ""),
+                        country=clean_str(data['address'].get('country', "")),
+                        country_code=clean_str(data['address'].get('country_code', "")),
+                        state=clean_str(data['address'].get('state', "")),
+                        city=clean_str(data['address'].get('county', "")),
                         address=data.get('display_name', "")
                     )
                     address.save()
