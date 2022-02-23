@@ -55,10 +55,8 @@ class MeUserAPIView(APIView):
     permission_classes = (IsAllowedUser, )
 
     def get(self, request):
-        s = time.time()
         user = request.user
         serializer = UserSerializer(user)
-        print(f"Elapsed me route: {time.time() - s}")
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
     def patch(self, request):
