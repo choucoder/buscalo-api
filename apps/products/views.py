@@ -140,29 +140,19 @@ class ProductRatingAPIView(APIView):
     def patch(self, request, pk):
         product = get_object_or_404(Product, pk=pk)
         user = request.user
-        order_products = OrderProduct.objects.filter(
-            product=product,
-            order__user=user,
-            order__status=Order.COMPLETED
-        )
-        if order_products:
-            rating = Rating.objects.filter(user=user, product=product).first()
-            if not rating:
-                serializer = self.serializer_class(data=request.data)
-            else:
-                serializer = self.serializer_class(rating, data=request.data, partial=True)
+        rating = Rating.objects.filter(user=user, product=product).first()
+
+        if not rating:
+            serializer = self.serializer_class(data=request.data)
             if serializer.is_valid():
                 _ = serializer.save(user=user, product=product)
                 serializer = CreateProductSerializer(product)
-                return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+                return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
             else:
                 return Response({
                     "data": {serializer.errors}},
                     status=status.HTTP_400_BAD_REQUEST
-                )
+                    )
         else:
-            return Response({
-                "data": {"message": "You dont have a completed order that included this product"}},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-            
+            rating.delete()
+            return Response({}, status=status.HTTP_204_NO_CONTENT)
