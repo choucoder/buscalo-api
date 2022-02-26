@@ -10,6 +10,7 @@ from .serializers import CreatePostSerializer, ListPostSerializer
 from .permissions import IsPostOwner
 from .filters import PostFilter
 from apps.products.models import Product
+from apps.shops.models import Shop
 from apps.products.permissions import IsProductOwner
 from users.models import SearchSetting
 from core.views import PaginateAPIView
@@ -59,15 +60,17 @@ class PostsAPIView(PaginateAPIView):
         if serializer.is_valid():
             is_allowed_to_post(data, request.user)
             user = request.user
-            post = serializer.save(user=user, location=user.location)
+            shop = Shop.objects.filter(user=user).first()
+            post = serializer.save(user=user, location=user.location, shop=shop)
             user.post_charge(post)
+            serializer = self.get_serializer_class('list')(instance=post)
             return Response(
-                {"data": serializer.data},
+                {"data": serializer.data, "status": status.HTTP_201_CREATED},
                 status=status.HTTP_201_CREATED
             )
         else:
             return Response(
-                {"data": serializer.errors},
+                {"data": serializer.errors, "status": status.HTTP_400_BAD_REQUEST},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
