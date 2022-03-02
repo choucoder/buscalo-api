@@ -57,7 +57,7 @@ class Post(models.Model):
     )
     views = models.IntegerField(default=0)
 
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def set_view(self, request):
         self.views += 1
