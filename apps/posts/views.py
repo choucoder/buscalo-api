@@ -7,8 +7,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from apps.posts.utils import has_text_or_photo, is_allowed_to_post
-from .models import Post
-from .serializers import CreatePostSerializer, ListPostSerializer
+from .models import Post, PostReaction
+from .serializers import (
+    CreatePostSerializer, ListPostSerializer, PostReactionSerializer
+)
 from .permissions import IsPostOwner
 from .filters import PostFilter
 from apps.products.models import Product
@@ -164,3 +166,27 @@ class PostProductsAPIView(APIView):
                 {'data': serializer.data},
                 status=status.HTTP_201_CREATED
             )
+
+
+class PostReactionAPIView(APIView):
+    serializer_class = PostReactionSerializer
+
+    def patch(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        user = request.user
+        reaction = PostReaction.objects.filter(user=user, post=post).first()
+
+        if not reaction:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                _ = serializer.save(user=user, post=post)
+                serializer = CreatePostSerializer(post)
+                return Response({"data": serializer.data}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    "data": {serializer.errors}},
+                    status=status.HTTP_400_BAD_REQUEST
+                    )
+        else:
+            reaction.delete()
+            return Response({}, status=status.HTTP_204_NO_CONTENT)

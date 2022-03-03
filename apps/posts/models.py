@@ -63,6 +63,9 @@ class Post(models.Model):
         self.views += 1
         super().save()
 
+    def get_reactions_amount(self):
+        return PostReaction.objects.filter(post=self).count()
+
     def __str__(self):
         if self.type_choices == self.PRODUCT:
             return "{shop}, {product}, {type}, {notify_type}".format(
@@ -78,3 +81,31 @@ class Post(models.Model):
                 type=self.type,
                 notify_type=self.get_notify_type_display()
             )
+
+
+class PostReaction(models.Model):
+    LOVE = 1
+
+    reaction_choices = [
+        (LOVE, 'LOVE'),
+    ]
+
+    id = ShortUUIDField(
+        length=32,
+        max_length=64,
+        primary_key=True,
+        editable=False
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    type = models.PositiveSmallIntegerField(
+        choices=reaction_choices,
+        default=reaction_choices[0][0]
+    )
+
+    def __str__(self):
+        return "{user}, {product}, {rating}".format(
+            user=self.user.first_name,
+            product=self.product.name,
+            rating=self.rating
+        )
