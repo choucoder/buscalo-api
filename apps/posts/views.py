@@ -58,13 +58,19 @@ class PostsAPIView(PaginateAPIView):
 
     def post(self, request):
         data = request.data
+        as_shop = data.pop('as_shop',['False'])
+        as_shop = as_shop[0]
+
         has_text_or_photo(data)
         serializer = self.get_serializer_class('create')(data=data)
 
         if serializer.is_valid():
             is_allowed_to_post(data, request.user)
             user = request.user
-            shop = Shop.objects.filter(user=user).first()
+            if as_shop == 'True':
+                shop = Shop.objects.filter(user=user).first()
+            else:
+                shop = None
             post = serializer.save(user=user, location=user.location, shop=shop)
             user.post_charge(post)
             serializer = self.get_serializer_class('list')(instance=post)
