@@ -121,15 +121,26 @@ class PostAPIView(APIView):
         return Response({}, status=status.HTTP_204_NO_CONTENT)
 
 
-class MePostsAPIView(APIView):
+class MePostsAPIView(PaginateAPIView):
 
-    serializer_class = CreatePostSerializer
+    serializer_classes = {
+        'list': ListPostSerializer,
+        'create': CreatePostSerializer
+    }
+    default_serializer_class = CreatePostSerializer
     permission_classes = (IsPostOwner, )
+
+    def get_serializer_class(self, action):
+        return self.serializer_classes.get(action, self.default_serializer_class)
 
     def get(self, request):
         posts = Post.objects.filter(user=request.user)
-        serializer = self.serializer_class(instance=posts, many=True)
-        return Response({'data': serializer.data}, status=status.HTTP_200_OK)
+        f = PostFilter(request.GET, queryset=posts)
+        page = self.paginate_queryset(f.qs.order_by('-created_at'))
+
+        if page is not None:
+            serializer = self.get_serializer_class('list')(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
 
 class PostProductsAPIView(APIView):
