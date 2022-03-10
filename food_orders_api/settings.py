@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'django.contrib.postgres',
     'rest_framework',
     'rest_framework_gis',
     'django_filters',
@@ -79,6 +80,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.services',
     'apps.feeds',
+    'apps.feedbacks',
 ]
 
 MIDDLEWARE = [
