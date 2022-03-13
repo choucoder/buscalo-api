@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'django_filters',
+    'phonenumber_field',
     'users',
     'core',
     'apps.shops',

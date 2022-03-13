@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from shortuuid.django_fields import ShortUUIDField
+from phonenumber_field.modelfields import PhoneNumberField
 
 from users.models import User
 from core.utils import get_filename, clean_str
@@ -28,7 +29,8 @@ class Shop(models.Model):
     location = models.PointField(geography=True, blank=True, null=True)
     currency = models.ForeignKey(Currency, on_delete=models.SET_NULL, blank=True, null=True)
     logo = models.ImageField(upload_to=get_filename, blank=True, null=True)
-    
+    phone_number = PhoneNumberField(null=True, blank=True)
+
     verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
