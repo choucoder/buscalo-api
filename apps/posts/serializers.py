@@ -1,9 +1,12 @@
+import datetime
+
 from rest_framework_gis.serializers import GeoModelSerializer
 
 from .models import Post, PostReaction
 from users.serializers import UserSerializer
 from apps.shops.serializers import CreateShopSerializer
 from apps.products.serializers import CreateProductSerializer
+from core.utils import get_time_ago
 
 
 class CreatePostSerializer(GeoModelSerializer):
@@ -29,6 +32,8 @@ class ListPostSerializer(GeoModelSerializer):
     def to_representation(self, instance):
         serialized_self = dict(super().to_representation(instance))
         serialized_self['reactions'] = instance.get_reactions_amount()
+        current_date = datetime.datetime.today()
+        serialized_self['ago'] = get_time_ago(instance.created_at, current_date)
         return serialized_self
 
 
