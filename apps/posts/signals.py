@@ -9,7 +9,6 @@ from apps.feeds.models import Feed
 @receiver(post_save, sender=Post)
 def emit_post_to_users(sender, instance, created, **kwargs):
     if created:
-        print("emitiendo post a todos los usuarios")
         users = User.objects.all()
         for user in users:
             settings = SearchSetting.objects.get(user=user)
@@ -24,4 +23,6 @@ def emit_post_to_users(sender, instance, created, **kwargs):
                     print(f"Usuario {user.first_name} tiene un nuevo post que ver")
                     user_feed = Feed(user=user, post=instance)
                     user_feed.save()
-            
+            else:
+                user_feed = Feed(user, post=instance)
+                user_feed.save()
