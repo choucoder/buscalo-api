@@ -24,5 +24,5 @@ def emit_post_to_users(sender, instance, created, **kwargs):
                     user_feed = Feed(user=user, post=instance)
                     user_feed.save()
             else:
-                user_feed = Feed(user, post=instance)
+                user_feed = Feed(user=user, post=instance)
                 user_feed.save()
