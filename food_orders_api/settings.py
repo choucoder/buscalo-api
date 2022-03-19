@@ -41,7 +41,7 @@ SECRET_KEY = 'django-insecure-el9(t#3pu9ikqa5emt8^q__icc40(!3ec+t_o6-lf*rzm$0^c$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Restframework settings
