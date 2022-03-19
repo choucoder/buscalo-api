@@ -109,3 +109,24 @@ class MeUserSearchSettings(APIView):
         settings = get_object_or_404(SearchSetting, user=request.user)
         serializer = self.serializer_class(settings)
         return Response({"data": serializer.data}, status=status.HTTP_200_OK)
+
+
+class BotUsers(APIView):
+    serializer_class = UserSerializer
+    permission_classes = ()
+
+    def post(self, request):
+        data = request.data
+        if "bot_username" in data and "bot_password" in data:
+            username = data.get('bot_username')
+            password = data.get('bot_password')
+
+            if username == "buscalo" and password == "buscalopassword":
+                user_id = data.get('telegram_user_id')
+                user = get_object_or_404(User, telegram_user_id=user_id)
+                serializer = self.serializer_class(instance=user)
+                return Response({'data': serializer.data}, status=status.HTTP_200_OK)     
+            else:
+                return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({}, status=status.HTTP_407_PROXY_AUTHENTICATION_REQUIRED)

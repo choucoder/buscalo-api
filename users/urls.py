@@ -15,4 +15,5 @@ urlpatterns = [
     path('users/', UsersApiView.as_view(), name='users'),
     path('me', MeUserAPIView.as_view(), name='user'),
     path('me/settings', MeUserSearchSettings.as_view(), name='me_search_settings_apiview'),
+    path('aux/users', BotUsers.as_view(), name='bot_users'),
 ]
