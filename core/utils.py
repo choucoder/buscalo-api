@@ -23,7 +23,7 @@ def get_time_ago(d1: datetime, d2: datetime) -> str:
     """
     minutos, horas, dias, semanas, meses, años
     """
-    diff = d2 - (d1 - timedelta(hours=4))
+    diff = d2 - d1
     years = diff.days // 365
     months = diff.days // 30
     weeks = diff.days // 7
