@@ -9,20 +9,4 @@ from apps.feeds.models import Feed
 @receiver(post_save, sender=Post)
 def emit_post_to_users(sender, instance, created, **kwargs):
     if created:
-        users = User.objects.all()
-        for user in users:
-            settings = SearchSetting.objects.get(user=user)
-            location = settings.location if settings.location else user.location
-
-            if location and instance.location:
-                distance = location.distance(instance.location)
-                distance_in_km = distance * 100
-                distance_in_mt = distance_in_km * 1000
-
-                if distance_in_mt <= settings.distance:
-                    print(f"Usuario {user.first_name} tiene un nuevo post que ver")
-                    user_feed = Feed(user=user, post=instance)
-                    user_feed.save()
-            else:
-                user_feed = Feed(user=user, post=instance)
-                user_feed.save()
+        pass
