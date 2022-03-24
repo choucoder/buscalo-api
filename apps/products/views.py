@@ -1,5 +1,6 @@
 from django.contrib.gis.measure import Distance
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import GeometryDistance
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers
 from rest_framework import response
@@ -36,6 +37,9 @@ class ProductsAPIView(PaginateAPIView):
                 )
             )
             products = Product.objects.filter(shop__in=shops)
+            products = products.filter().order_by(
+                GeometryDistance("shop__location", location)
+            )
         else:
             products = Product.objects.all()
 
