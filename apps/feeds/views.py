@@ -34,7 +34,7 @@ class FeedsAPIView(PaginateAPIView):
             unseen_posts = posts.difference(seen_posts)
 
             if unseen_posts:
-                unseen_post = Post.objects.filter(id__in=unseen_posts).annotate(distance=Distance('location', user_location)).order_by('-created_at', 'distance').first()
+                unseen_post = Post.objects.filter(id__in=unseen_posts).order_by('-created_at').first()
                 unseen_post.views += 1
                 unseen_post.save()
                 # Mark post as viewed
