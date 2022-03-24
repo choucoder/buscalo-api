@@ -69,7 +69,10 @@ class PostsAPIView(PaginateAPIView):
             user = request.user
             if as_shop == 'True':
                 shop = Shop.objects.filter(user=user).first()
-                location = shop.location
+                if shop:
+                    location = shop.location
+                else:
+                    location = None
             else:
                 shop = None
                 location = user.location
