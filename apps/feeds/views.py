@@ -17,15 +17,16 @@ class FeedsAPIView(PaginateAPIView):
     def get(self, request):
         user = request.user
         settings = SearchSetting.objects.filter(user=user).first()
-        user_location = user.location if not settings.location else settings.location
+        user_location = settings.location if not user.location else user.location
 
         feed = None
+        feed_radius = 250 * 1000
 
         if user_location:
             posts = Post.objects.filter(
                 location__distance_lt=(
                     user_location,
-                    Distance(m=settings.distance)
+                    Distance(m=feed_radius)
                 )
             ).order_by('-created_at').values_list('id', flat=True)
 
@@ -33,7 +34,7 @@ class FeedsAPIView(PaginateAPIView):
             unseen_posts = posts.difference(seen_posts)
 
             if unseen_posts:
-                unseen_post = Post.objects.filter(id__in=unseen_posts).order_by('-created_at').first()
+                unseen_post = Post.objects.filter(id__in=unseen_posts).annotate(distance=Distance('location', user_location)).order_by('-created_at', 'distance').first()
                 unseen_post.views += 1
                 unseen_post.save()
                 # Mark post as viewed
