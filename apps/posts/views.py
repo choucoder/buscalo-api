@@ -69,9 +69,12 @@ class PostsAPIView(PaginateAPIView):
             user = request.user
             if as_shop == 'True':
                 shop = Shop.objects.filter(user=user).first()
+                location = shop.location
             else:
                 shop = None
-            post = serializer.save(user=user, location=user.location, shop=shop)
+                location = user.location
+
+            post = serializer.save(user=user, location=location, shop=shop)
             user.post_charge(post)
             serializer = self.get_serializer_class('list')(instance=post)
             return Response(
