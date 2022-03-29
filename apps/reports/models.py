@@ -4,8 +4,8 @@ from django.utils import timezone
 from shortuuid.django_fields import ShortUUIDField
 
 from users.models import User
-from posts.models import Post
-from products.models import Product
+from apps.posts.models import Post
+from apps.products.models import Product
 
 
 class Report(models.Model):
@@ -44,8 +44,8 @@ class Report(models.Model):
         choices=issued_choices
     )
 
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    reported_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_owner")
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_reporter")
 
     created_at = models.DateTimeField(default=timezone.now)
 

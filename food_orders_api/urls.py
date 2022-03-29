@@ -28,6 +28,7 @@ urlpatterns = [
     path('', include('apps.orders.urls')),
     path('', include('apps.feeds.urls')),
     path('', include('apps.feedbacks.urls')),
+    path('', include('apps.reports.urls')),
 ]
 
 if settings.DEBUG:

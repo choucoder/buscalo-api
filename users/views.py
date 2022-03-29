@@ -77,7 +77,6 @@ class MeUserAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    
     def delete(self, request):
         user = request.user
         self.check_object_permissions(request, user)

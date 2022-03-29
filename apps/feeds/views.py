@@ -1,5 +1,6 @@
 from random import randint
 from django.contrib.gis.measure import Distance
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -81,50 +82,14 @@ class FeedsAPIView(PaginateAPIView):
             return Response({'data': []}, status=status.HTTP_200_OK)
 
 
-class FeedsOldAPIView(PaginateAPIView):
+class FeedAPIView(APIView):
 
     serializer_class = FeedSerializer
 
-    def get(self, request):
-        user = request.user
-        settings = SearchSetting.objects.filter(user=user).first()
-        me_location = user.location if not settings.location else settings.location
+    def get(self, request, pk):
+        feed = get_object_or_404(Feed, pk=pk)
 
-        if me_location:
-            feeds = Feed.objects.filter(
-                post__location__distance_lt=(
-                    me_location,
-                    Distance(m=settings.distance)
-                ),
-                post__notify_type=Post.PUSH,
-                user=user,
-                seen=False
-            ).order_by('created_at')
-
-            if not feeds:
-                feeds = Feed.objects.filter(
-                    post__location__distance_lt=(
-                        me_location,
-                        Distance(m=settings.distance)
-                    ),
-                    user=user,
-                    seen=False
-                ).order_by('created_at')
-
-        else:
-            feeds = Feed.objects.filter(user=user, seen=False)
-            if not feeds:
-                feeds = Feed.objects.filter(
-                    user=user,
-                    seen=False,
-                    post__notify_type=Post.PUSH
-                )
-        page = self.paginate_queryset(feeds)
-
-        for feed in page:
-            feed.mark_as_seen()
-            feed.post.set_view(request)
-        
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        serializer = self.serializer_class(instance=feed)
+        return Response({
+            'data': serializer.data
+        }, status=status.HTTP_200_OK)
