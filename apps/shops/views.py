@@ -36,13 +36,16 @@ class ShopsAPIView(APIView):
     def post(self, request):
         user = request.user
         data = request.data
+        currency = data.pop('currency', None)
         serializer = self.get_serializer_class('create')(data=data)
 
         if serializer.is_valid():
+            currency = Currency.objects.filter(code=currency).first()
+            
             if not "location" in data:
-                shop = serializer.save(user=user, location=user.location)
+                shop = serializer.save(user=user, location=user.location, currency=currency)
             else:
-                shop = serializer.save(user=user)
+                shop = serializer.save(user=user, currency=currency)
             shop.update_address(is_location=True)
 
             serializer = self.get_serializer_class('list')(instance=shop)
