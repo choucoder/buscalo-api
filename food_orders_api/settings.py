@@ -189,4 +189,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Media files uploaded
 MEDIA_ROOT = BASE_DIR / 'media'
-MEDIA_URL = '/media/' # 'http://0.0.0.0:port/media/
+MEDIA_URL = '/api' + '/media/' # 'http://0.0.0.0:port/media/

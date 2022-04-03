@@ -19,16 +19,18 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path
 
+prefix = 'api/'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('users.urls')),
-    path('', include('apps.shops.urls')),
-    path('', include('apps.products.urls')),
-    path('', include('apps.posts.urls')),
-    path('', include('apps.orders.urls')),
-    path('', include('apps.feeds.urls')),
-    path('', include('apps.feedbacks.urls')),
-    path('', include('apps.reports.urls')),
+    path(prefix, include('users.urls')),
+    path(prefix, include('apps.shops.urls')),
+    path(prefix, include('apps.products.urls')),
+    path(prefix, include('apps.posts.urls')),
+    path(prefix, include('apps.orders.urls')),
+    path(prefix, include('apps.feeds.urls')),
+    path(prefix, include('apps.feedbacks.urls')),
+    path(prefix, include('apps.reports.urls')),
 ]
 
 if settings.DEBUG:
