@@ -45,7 +45,7 @@ class Post(models.Model):
         choices=notify_type_choices,
         default=notify_type_choices[0][0]
     )
-    text = models.CharField(max_length=255, null=True)
+    text = models.CharField(max_length=65565, null=True)
     photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     location = models.PointField(geography=True, blank=True, null=True)
 

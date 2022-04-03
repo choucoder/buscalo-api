@@ -19,8 +19,8 @@ class Product(models.Model):
         editable=False,
     )
     shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
-    details = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=256)
+    details = models.CharField(max_length=512, null=True)
     price = models.FloatField()
     photo = models.ImageField(upload_to=get_filename, blank=True, null=True)
     
