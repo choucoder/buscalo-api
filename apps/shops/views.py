@@ -1,3 +1,6 @@
+from django.contrib.gis.measure import Distance
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import GeometryDistance
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.views import APIView
@@ -6,14 +9,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from core.models import Currency
+from core.views import PaginateAPIView
 
 from .models import Shop
+from .filters import ShopFilter
 from .serializers import ListShopSerializer, CreateShopSerializer
 from .permissions import IsShopOwner
-from users.models import User
+from users.models import User, SearchSetting
 
 
-class ShopsAPIView(APIView):
+class ShopsAPIView(PaginateAPIView):
     serializer_classes = {
         'list': ListShopSerializer,
         'create': CreateShopSerializer,
@@ -25,13 +30,30 @@ class ShopsAPIView(APIView):
         return self.serializer_classes.get(action, self.default_serializer_class)
 
     def get(self, request):
-        shops = Shop.objects.all()
-        serializer = self.get_serializer_class('list')(shops, many=True)
+        user = request.user
+        settings = SearchSetting.objects.filter(user=user).first()
+        location = user.location if not settings.location else settings.location
 
-        return Response(
-            {'data': serializer.data},
-            status=status.HTTP_200_OK
-        )
+        if location:
+            shops = Shop.objects.filter(
+                location__distance_lt=(
+                    location,
+                    Distance(m=settings.distance)
+                )
+            )
+            shops = shops.filter().order_by(
+                GeometryDistance("location", location)
+            )
+        else:
+            shops = Shop.objects.all()
+
+        f = ShopFilter(request.GET, queryset=shops)
+        page = self.paginate_queryset(f.qs.order_by('created_at'))
+
+        if page is not None:
+            serializer = self.get_serializer_class('list')(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
 
     def post(self, request):
         user = request.user
